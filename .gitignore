@@ -1,7 +1,5 @@
-secret.txt
-
+*~
+.DS_Store
 __pycache__/
-.idea/
-
-*.py[cod]
-*.sqlite3
+*.pyc
+venv/

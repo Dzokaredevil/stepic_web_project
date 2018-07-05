@@ -1,0 +1,153 @@
+# -*- mode: rst; -*-
+
+======
+Django
+======
+
+https://docs.djangoproject.com/en/1.9/intro/tutorial02/
+
+---
+API
+---
+
+$ python manage.py shell
+>>> from qa.models import Question, Answer
+>>> from datetime import datetime
+>>> from django.contrib.auth.models import User
+>>> u = User(username='test')
+>>> u.save()
+>>> c = Question.objects.create(title='How about that?', text='Aha!!! The Spanish Inquisition is coming!', added_at=datetime.now(), rating=10, author=u)
+>>> c.title
+>>> c.author
+>>> c.author.username
+
+>>> c.title = 'The brand new title!'
+>>> c.save()
+
+>>> u1 = User(username='User 1'); u1.save()
+>>> u2 = User(username='User 2'); u2.save()
+>>> u3 = User(username='User 3'); u3.save()
+>>> c.likes = User.objects.all()[1:]
+>>> c.save()
+>>> c.likes.all()
+>>> c.likes.add(u)
+>>> c.save()
+
+>>> try:
+...   question = Question.objects.get(pk=1) # .get(title="...")
+... except Question.DoesNotExist:           # MultipleObjectsReturned
+...   question = None
+>>> question.title
+
+>>> User.objects.all()
+
+>>> Question.objects.filter(author=u)
+>>> Question.objects.filter(author=u1)
+
+>>> Question.objects.filter(title__contains='new').first()
+>>> Question.objects.filter(title__contains='new').first().title
+
+>>> # QuerySet
+>>> Question.objects.filter(title__contains='new').order_by('-rating')
+>>> User.objects.filter(username__contains='User').order_by('-id') # descending order
+>>> User.objects.filter(username__contains='User').order_by('id')  # ascending order
+>>> User.objects.filter(username__contains='User').order_by('-id')[1:3]
+>>> User.objects.filter(username__contains='User').order_by('-id')[1:3].reverse()
+>>> User.objects.filter(username__contains='User').exclude(id=2)
+>>> User.objects.filter(username__contains='User').exclude(id=2).count()
+>>> User.objects.filter(id__gt=2)
+
+>>> User._meta.db_table # db table name
+>>> Question.objects.filter(author__username__contains="test")
+
+
+
+----------
+Migrations
+----------
+
+#. Check if models are OK:
+   $ python manage.py check;
+#. When changes to the models.py are made, create migration:
+   $ python manage.py makemigrations qa
+#. See what migrations look like:
+   $ python manage.py sqlmigrate qa num_of_migration
+   where `num_of_migration` if the first digits in the output like this:
+   0002_auto_20160520_1019.py
+#. Apply migration to DB:
+   $ python manage.py migrate
+   
+
+======
+Deploy
+======
+
+--
+DB
+--
+
+Instead of hardcored into ask/ask/settings.py, DB password should be
+specified as a shell variable:
+
+$ export DB_PASSWORD=your_password
+
+-------
+SQLite3
+-------
+
+If SQLite3 is used, then do:
+
+$ cd ~/
+$ sudo chmod -R a+rw .
+
+Then in ask/ask/settings.py comment:
+import pymysql
+pymysql...
+
+In database settings change ENGINE and comment out NAME
+
+---------------
+Remote instance
+---------------
+
+#. Clone repo into web folder
+   $ git clone https://github.com/pilosus/stepic_web_project.git /home/box/web
+#. Install requirements
+#. Start init script
+   $ cd web
+   $ bash init.sh
+#. Enjoy!
+
+
+---------
+Test file
+---------
+
+These lines have to be added to: /home/box/server_113.py
+6 +++ import django
+7 +++ django.setup()
+
+=======
+Testing
+=======
+
+Instead of curl, HTTPie may be used as well. It's a super cool tool,
+check it out:
+
+https://github.com/jkbrzt/httpie
+
+#. Get HTTP Headers only
+   $ (venv) http --headers GET http://127.0.0.1:8000/
+
+#. Show both request and response
+   $ (venv) http --verbose GET http://127.0.0.1:8000/
+
+#. Plain vanilla request
+   $ (venv) http GET http://127.0.0.1:8000/
+
+#. Submit Form after authentication process using POST method:
+   $ (venv) http --auth <email>:<password> --json POST \
+   > http://127.0.0.1:8000/api/v1.0/posts/ \
+   > body=This is a test, you insensitive clod.
+
+
