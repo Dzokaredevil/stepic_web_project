@@ -1,16 +1,15 @@
-from django.conf.urls import url, include
-from django.contrib import admin
+from django.conf.urls import patterns, include, url
+from qa.views import test, question, qa_list_all, qa_popular_all, ask_add, answer_add, signup_add, login_add
 
-from . import views
-
-urlpatterns = [
-    url(r'^$', views.index, name='index'),
-    url(r'^popular/.*$', views.popular, name='popular'),    
-    url(r'^ask/.*$', views.ask, name='ask'),
-    url(r'^answer/.*$', views.answer, name='answer'),
-    url(r'^signup/.*$', views.user_signup, name='signup'),
-    url(r'^login/.*$', views.user_login, name='login'),
-    url(r'^logout/.*$', views.user_logout, name='logout'),    
-    url(r'^new/.*$', views.test),
-    url(r'^question/(?P<question_id>[0-9]+)/$', views.question, name='question'),    
-]
+urlpatterns = patterns('',
+   url(r'^$', qa_list_all, name='main'),
+   url(r'^\?page=(?P<page>\d+)', qa_list_all, name='main'),
+   url(r'^login/', login_add, name='login'),
+   url(r'^signup/', signup_add, name='signup'),
+   url(r'^question/(?P<id>\d+)/', question, name='question'),
+   url(r'^ask/', ask_add, name='ask'),
+   url(r'^answer/', answer_add, name='answer'),
+   url(r'^popular/', qa_popular_all, name='popular'),
+   url(r'^popular/\?page=(?P<page>\d+)', qa_popular_all, name='popular'),
+   url(r'^new/', test, name='new'),
+)

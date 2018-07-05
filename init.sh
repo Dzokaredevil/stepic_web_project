@@ -1,40 +1,21 @@
-### Создание проекта в рамках курса на stepic.org
+#nginx conf
+sudo rm /etc/nginx/sites-enabled/default
+sudo rm /etc/nginx/sites-enabled/test.conf
+sudo ln -s /home/box/web/etc/nginx.conf /etc/nginx/sites-enabled/test.conf
+sudo /etc/init.d/nginx restart
 
-# $ mkdir -p /home/box/web
-# $ git clone https://github.com/Dzokaredevil/stepic_web_project.git /home/box/web
-# $ bash /home/box/web/init.sh
-# if git files changed locally, stash or reset:
-# $ git reset --hard
+#gunicorn conf
+sudo rm /etc/gunicorn.d/test
+sudo rm /etc/gunicorn.d/ask
+#sudo ln -s /home/box/web/etc/gunicorn.conf /etc/gunicorn.d/test
+sudo ln -s /home/box/web/etc/gunicorn_ask.conf /etc/gunicorn.d/ask
+sudo /etc/init.d/gunicorn restart
 
-# create symbolic link to a new nginx config
-sudo -s ln -sf /home/box/web/etc/nginx.conf  /etc/nginx/sites-enabled/django.conf
-sudo -s rm /etc/nginx/sites-enabled/default
+#database conf
+#sudo /etc/init.d/mysql restart
+mysql -uroot -e "DROP DATABASE ASK"
+mysql -uroot -e "CREATE DATABASE ASK"
+mysql -uroot -e "CREATE USER 'sa'@'localhost' IDENTIFIED BY 'sa'"
+mysql -uroot -e "GRANT ALL PRIVILEGES ON ASK.* TO 'sa'@'localhost'"
 
-# restart nginx
-sudo -s /etc/init.d/nginx restart
-
-# in /etc/nginx/sites-enabled/default
-# first two comment lines with listen 80 /server_default
-
-# install lib needed for mysql-python package
-#sudo -s apt-get install libmysqlclient-dev
-
-# run MySQL & create DB
-sudo -s /etc/init.d/mysql start && \
-    mysql -uroot -e "create database django"
-
-# creare symbolic links to gunicorn configs
-#sudo -s ln -sf /home/box/web/etc/hello.py  /etc/gunicorn.d/hello.py
-#sudo -s ln -sf /home/box/web/etc/django-gunicorn.conf  /etc/gunicorn.d/django-gunicorn.conf
-
-# 
-cd /home/box/web && \
-    virtualenv venv && \
-    source venv/bin/activate && \
-    pip install -r requirements/production.txt && \
-    export PYTHONPATH=$(pwd):$PYTHONPATH && \
-    cd /home/box/web/ask && \
-    python manage.py migrate && \
-    exec gunicorn --bind=0.0.0.0:8000 --workers=4 ask.wsgi:application
-
-#exec gunicorn -с ../etc/django-gunicorn.conf ask.wsgi:application
+python /home/box/web/ask/manage.py syncdb
